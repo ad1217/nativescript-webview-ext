@@ -192,6 +192,13 @@ export class WKWebViewWrapper implements IOSWebViewWrapper {
         configuration.preferences.setValueForKey(true, "allowFileAccessFromFileURLs");
         configuration.setValueForKey(true, "allowUniversalAccessFromFileURLs");
 
+        configuration.websiteDataStore = WKWebsiteDataStore.nonPersistentDataStore();
+        let cookies = NSHTTPCookieStorage.sharedHTTPCookieStorage.cookies;
+        Promise.all(Array.from(cookies).map(c => new Promise(resolve => {
+            const cookieStore = configuration.websiteDataStore.httpCookieStore;
+            cookieStore.setCookieCompletionHandler(cookie, resolve);
+        })));
+
         this.wkCustomUrlSchemeHandler = new CustomUrlSchemeHandler();
 
         configuration.setURLSchemeHandlerForURLScheme(this.wkCustomUrlSchemeHandler, owner.interceptScheme);
